@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
 
-st.title("Hochschulgeräteverwaltung")
+st.title("ABC")
 
 #creating tabs
 tab1, tab2, tab3, tab4 = st.tabs(["Geräte", "Nutzer", "Reservierungen", "Wartung"])
