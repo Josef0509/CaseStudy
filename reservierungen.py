@@ -8,11 +8,15 @@ st.header("Reservierung anlegen oder entfernen")
 device_name = st.selectbox("Gerät:", ["Gerät 1", "Gerät 2", "Gerät 3"])
 reserver = st.selectbox("Reservierende Person:", ["Person 1", "Person 2", "Person 3"])
 reservation_date = st.date_input("Reservierungsdatum:")
+start_time = st.time_input("Anfangszeit:")
+end_time = st.time_input("Endzeit:")
 if st.button("Reservierung anlegen/entfernen"):
     reservation_data = {
         "device_id": device_name,
         "reservation_date": reservation_date,
         "reserver": reserver,
+        "start_time": start_time,
+        "end_time": end_time
         # Weitere Reservierungsattribute hier hinzufügen
     }#dosomething
-    st.success(f"Reservierung von {device_name} wurde für {reserver} am {reservation_date} angelegt/entfernt!")
+    st.success(f"Reservierung von {device_name} wurde für {reserver} am {reservation_date} von {start_time} bis {end_time} angelegt/entfernt!")
