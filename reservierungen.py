@@ -1,4 +1,5 @@
 import streamlit as st
+import time
 from st_pages import add_page_title
 
 add_page_title()
@@ -19,4 +20,9 @@ if st.button("Reservierung anlegen/entfernen"):
         "end_time": end_time
         # Weitere Reservierungsattribute hier hinzufügen
     }#dosomething
+
+    with st.spinner("Loading..."):
+            time.sleep(1)
+            #Save the data
+            
     st.success(f"Reservierung von {device_name} wurde für {reserver} am {reservation_date} von {start_time} bis {end_time} angelegt/entfernt!")
