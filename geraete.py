@@ -82,22 +82,29 @@ if st.session_state.show_session == 1:
 	header_ph.header("Gerät ändern")
 	devices = queries.find_devices()
 	device_name = device_ph.selectbox("Gerät:", devices, placeholder="Gerät auswählen ...")
-
 	device_data = Device.load_data_by_device_name(device_name)
-	device_data.article_number = article_number_ph.text_input("Artikelnummer:", value = device_data.article_number)
+ 
+	# Fill the placeholders with the data of the selected device
+	art_number = article_number_ph.text_input("Artikelnummer:", value = device_data.article_number)
 	acquisition_date_ph.text(device_data.acquisition_date)
-	device_data.change_date = datetime.now().strftime(dateformat)
-	device_data.device_description = description_ph.text_area("Optionale Beschreibung:", value = device_data.device_description)
-	device_data.managed_by_user_id = responsible_person_ph.selectbox("verantwortliche Person:", person_data["name"], index = person_data["name"].index(device_data.managed_by_user_id))
+	cdate = datetime.now().strftime(dateformat)
+	description = description_ph.text_area("Optionale Beschreibung:", value = device_data.device_description)
+	manager = responsible_person_ph.selectbox("verantwortliche Person:", person_data["name"], index = person_data["name"].index(device_data.managed_by_user_id))
 	#
 	
 	if button1_ph.button("Gerät ändern"):
+		#Store the reservation data the Device class to secure a smooth data transfer
+		device_data.article_number = art_number
+		device_data.change_date = cdate
+		device_data.device_description = description
+		device_data.managed_by_user_id = manager
+  
 		device_data.store_data()
 
 		with st.spinner("Loading..."):
 			time.sleep(1)
-			#Save the device
    
+		#Save the device
 		st.success(f"Gerät {device_data.device_name} mit dem Verantwortlichen {device_data.managed_by_user_id} wurde aktualisiert!")
 		time.sleep(2)
 		st.session_state.show_session = 0

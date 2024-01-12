@@ -2,9 +2,7 @@ import streamlit as st
 import datetime
 import time
 from st_pages import add_page_title
-
-import sys
-import pandas as pd
+from class_user import User
 
 # Initialize session state
 if 'show_session' not in st.session_state:
@@ -29,10 +27,8 @@ user_email = email_ph.text_input("E-Mail-Adresse des Nutzers:")
 # Nutzer speichern
 if button1_ph.button("Nutzer anlegen"):
 	#Store the user data in a dictionary
-	user_data = {
-		"user_name": user_name,
-		"user_email": user_email
-	}
+	User(user_name, user_email)
+	User.store_data()
 
 	with st.spinner("Loading..."):
 		time.sleep(1)
@@ -47,12 +43,7 @@ if button2_ph.button("Nutzer anzeigen"):
 	# Empty placeholder
 	button2_ph.empty()
 	# Load data
-	data_df = pd.DataFrame(
-	{
-		"Nutzer": ["Stefan Posch", "Josef Obwaller", "Sandro Streicher", "Elias Zischg"],
-		"Email": ["nafets.posch@gmail.com", "josef.genious@outlook.at", "sandro.schwounz@tsn.at", "mister.z1x@aol.at"],
-	}
-	)
+	User.load_data_by_user_name(user_name)
 	# Show data
 	table_ph.data_editor( data_df, column_config=
 	{
