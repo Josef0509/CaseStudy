@@ -52,6 +52,8 @@ if not st.session_state.show_session:
 
 		# Message that the reservation was created
 		st.success(f"Reservierung von {device_name} wurde für {reserver} zwischen {reservation_date_start} - {reservatio_date_end} von {start_time} bis {end_time} angelegt!")
+		time.sleep(2)
+		st.rerun()
 
 	if button2_ph.button("Löschen"):
 		st.session_state.show_session = True
