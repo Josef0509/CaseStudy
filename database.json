@@ -1,6 +1,1 @@
-{"devices": {
-            "1": {"device_name": "Device1", "managed_by_user_id": "one@mci.edu", "is_active": true}, 
-            "2": {"device_name": "Device2", "managed_by_user_id": "two@mci.edu", "is_active": true}, 
-            "3": {"device_name": "Device3", "managed_by_user_id": "three@mci.edu", "is_active": true}
-            }
-}
+{"devices": {"1": {"device_name": "CNC", "article_number": "57", "acquisition_date": "2024-01-12 ", "change_date": "2024-01-12 ", "device_description": "zi", "managed_by_user_id": "Person 2", "is_active": true}, "2": {"device_name": "Fr\u00e4se", "article_number": "236276", "acquisition_date": "2024-01-12 ", "change_date": "2024-01-12 ", "device_description": "test", "managed_by_user_id": "Person 3", "is_active": true}, "3": {"device_name": "Klo", "article_number": "2", "acquisition_date": "2024-01-12 ", "change_date": "2024-01-12 ", "device_description": "etc", "managed_by_user_id": "Person 3", "is_active": true}}}

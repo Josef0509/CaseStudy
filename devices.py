@@ -1,6 +1,7 @@
 import os
 from users import User
 from tinydb import TinyDB, Query
+from datetime import datetime
 from serializer import serializer
 
 
@@ -9,10 +10,12 @@ class Device():
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'), storage=serializer).table('devices')
 
     # Constructor
-    def __init__(self, device_name : str, managed_by_user_id : str):
+    def __init__(self, device_name : str, article_number_dev : str, device_description_dev : str, managed_by_user_id : str, acquisition_date_dev: datetime, change_date_dev: datetime):
         self.device_name = device_name
-        # The user id of the user that manages the device
-        # We don't store the user object itself, but only the id (as a key)
+        self.article_number = article_number_dev
+        self.acquisition_date = acquisition_date_dev
+        self.change_date = change_date_dev
+        self.device_description = device_description_dev
         self.managed_by_user_id = managed_by_user_id
         self.is_active = True
         
@@ -47,27 +50,10 @@ class Device():
 
         if result:
             data = result[0]
-            return cls(data['device_name'], data['managed_by_user_id'])
+            return cls(data['device_name'], data['article_number'], data['device_description'], data['managed_by_user_id'], data['acquisition_date'], data['change_date'])
         else:
             return None
 
 
-
-if __name__ == "__main__":
-    # Create a device
-    device1 = Device("Device1", "one@mci.edu")
-    device2 = Device("Device2", "two@mci.edu") 
-    device3 = Device("Device3", "two@mci.edu") 
-    device1.store_data()
-    device2.store_data()
-    device3.store_data()
-    device4 = Device("Device3", "four@mci.edu") 
-    device4.store_data()
-
-    loaded_device = Device.load_data_by_device_name('Device2')
-    if loaded_device:
-        print(f"Loaded Device: {loaded_device}")
-    else:
-        print("Device not found.")
 
     
