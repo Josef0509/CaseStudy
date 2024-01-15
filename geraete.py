@@ -25,8 +25,6 @@ button1_ph = cl1.empty()
 button2_ph = cl2.empty()
 button3_ph = cl3.empty()
 
-dateformat = "%Y-%m-%d "
-
 if st.session_state.show_session == 0:
 	# Find the users
 	person_data = queries.find_database('users', 'name')
@@ -35,8 +33,8 @@ if st.session_state.show_session == 0:
 	header_ph.header("Neues Gerät anlegen")
 	device_name = device_ph.text_input("Name des Geräts*:")
 	article_number = article_number_ph.text_input("Artikelnummer*:")
-	acquisition_date = datetime.now().strftime(dateformat)
-	change_date = datetime.now().strftime(dateformat)
+	acquisition_date = datetime.now().strftime("%Y-%m-%d")
+	change_date = datetime.now().strftime("%Y-%m-%d")
 	device_description = description_ph.text_area("Optionale Beschreibung:")
 	device_responsible = responsible_person_ph.selectbox("verantwortliche Person*:",["-", *person_data], index=0)
 
@@ -94,7 +92,7 @@ if st.session_state.show_session == 1:
 		# Fill the placeholders with the data of the selected device
 		art_number = article_number_ph.text_input("Artikelnummer:", value = device_data.article_number)
 		acquisition_date_ph.text(device_data.acquisition_date)
-		cdate = datetime.now().strftime(dateformat)
+		cdate = datetime.now().strftime("%Y-%m-%d")
 		description = description_ph.text_area("Optionale Beschreibung:", value = device_data.device_description)
 		manager = responsible_person_ph.selectbox("verantwortliche Person:", users, index = users.index(device_data.managed_by_user_id))
 

@@ -30,8 +30,8 @@ class Device():
 	def store_data(self):
 		print("Storing data...")
 		# Check if the device already exists in the database
-		DeviceQuery = Query()
-		result = self.db_connector.search(DeviceQuery.device_name == self.device_name)
+		device_query = Query()
+		result = self.db_connector.search(device_query.device_name == self.device_name)
 		if result:
 			# Update the existing record with the current instance's data
 			result = self.db_connector.update(self.__dict__, doc_ids=[result[0].doc_id])
@@ -44,8 +44,8 @@ class Device():
 	def delete_data(self):
 		print("Deleting data...")
 		# Check if the device already exists in the database
-		UserQuery = Query()
-		result = self.db_connector.search(UserQuery.name == self.name)
+		device_query = Query()
+		result = self.db_connector.search(device_query.name == self.name)
 		if result:
 			# Delete the existing record
 			result = self.db_connector.remove(doc_ids=[result[0].doc_id])
@@ -57,11 +57,11 @@ class Device():
 	@classmethod
 	def load_data_by_device_name(cls, device_name):
 		# Load data from the database and create an instance of the Device class
-		DeviceQuery = Query()
-		result = cls.db_connector.search(DeviceQuery.device_name == device_name)
+		device_query = Query()
+		result = cls.db_connector.search(device_query.device_name == device_name)
 
 		if result:
 			data = result[0]
-			return cls(data['device_name'], data['article_number'], data['device_description'], data['managed_by_user_id'], data['acquisition_date'], data['change_date'])
+			return [cls(data['device_name'], data['article_number'], data['device_description'], data['managed_by_user_id'], data['acquisition_date'], data['change_date']), data.doc_id]
 		else:
 			return None

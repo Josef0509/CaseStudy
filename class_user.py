@@ -12,7 +12,7 @@ class User():
 	def __init__(self, user_name : str, user_email : str):
 		self.name = user_name
 		self.email = user_email
-		self.is_active = True
+		self.is_active = False
 
 	# String representation of the class
 	def __str__(self):
@@ -25,8 +25,8 @@ class User():
 	def store_data(self):
 		print("Storing data...")
 		# Check if the device already exists in the database
-		UserQuery = Query()
-		result = self.db_connector.search(UserQuery.name == self.name)
+		user_query = Query()
+		result = self.db_connector.search(user_query.name == self.name)
 		if result:
 			# Update the existing record with the current instance's data
 			result = self.db_connector.update(self.__dict__, doc_ids=[result[0].doc_id])
@@ -36,11 +36,11 @@ class User():
 			self.db_connector.insert(self.__dict__)
 			print("Data inserted.")
 
-	def delete_data(self):
+	def delete_data(self, doc_id):
 		print("Deleting data...")
 		# Check if the device already exists in the database
-		UserQuery = Query()
-		result = self.db_connector.search(UserQuery.name == self.name)
+		user_query = Query()
+		result = self.db_connector.search(user_query.name == self.name)
 		if result:
 			# Delete the existing record
 			result = self.db_connector.remove(doc_ids=[result[0].doc_id])
@@ -52,11 +52,20 @@ class User():
 	@classmethod
 	def load_data_by_user_name(cls, user_name):
 		# Load data from the database and create an instance of the Device class
-		UserQuery = Query()
-		result = cls.db_connector.search(UserQuery.name == user_name)
+		user_query = Query()
+		result = cls.db_connector.search(user_query.name == user_name)
 
 		if result:
 			data = result[0]
-			return cls(data['name'], data['email'])
+			return [cls(data['name'], data['email']), data.doc_id]
 		else:
 			return None
+	
+	def delete_data_by_doc_id(cls, doc_id):
+		# Load data from the database and create an instance of the Device class
+		result = cls.db_connector.remove(doc_ids=[doc_id])
+
+		if result:
+			return True
+		else:
+			return False

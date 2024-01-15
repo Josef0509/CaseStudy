@@ -27,8 +27,8 @@ class Reservation():
 	def store_data(self):
 		print("Storing data...")
 		# Check if the reservation already exists in the database
-		ReservationQuery = Query()
-		result = self.db_connector.search(ReservationQuery.device_name == self.device_name)
+		reservation_query = Query()
+		result = self.db_connector.search(reservation_query.device_name == self.device_name)
 
 		if result:
 			# Check if the reservation already exists in the database
@@ -64,8 +64,8 @@ class Reservation():
 	def delete_data(self):
 		print("Deleting data...")
 		# Check if the device already exists in the database
-		UserQuery = Query()
-		result = self.db_connector.search(UserQuery.name == self.name)
+		reservation_query = Query()
+		result = self.db_connector.search(reservation_query.name == self.name)
 		if result:
 			# Delete the existing record
 			result = self.db_connector.remove(doc_ids=[result[0].doc_id])
@@ -77,11 +77,11 @@ class Reservation():
 	@classmethod
 	def load_data_by_device_name(cls, device_name):
 		# Load data from the database and create an instance of the Device class
-		DeviceQuery = Query()
-		result = cls.db_connector.search(DeviceQuery.device_name == device_name)
+		reservation_query = Query()
+		result = cls.db_connector.search(reservation_query.device_name == device_name)
 
 		if result:
 			data = result[0]
-			return [cls(data['device_name'], data['reserver'], data['start_time'], data['end_time']) for data in result]
+			return [[cls(data['device_name'], data['reserver'], data['start_time'], data['end_time']) for data in result], data.doc_id]
 		else:
 			raise LookupError("Keine Reservierungen gefunden")
