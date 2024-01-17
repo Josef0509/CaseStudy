@@ -3,7 +3,7 @@ import streamlit as st
 from datetime import datetime
 import time
 from st_pages import add_page_title
-from devices import Device
+from class_devices import Device
 import queries
 
 # Initialize session state
@@ -25,30 +25,32 @@ button1_ph = cl1.empty()
 button2_ph = cl2.empty()
 button3_ph = cl3.empty()
 
-dateformat = "%Y-%m-%d "
-
-person_data = {
-	"name": ["Person 1", "Person 2", "Person 3"],
-}
-
 if st.session_state.show_session == 0:
+	# Find the users
+	person_data = queries.find_database('users', 'name')
+
+	#Create a menu to assign a new machine
 	header_ph.header("Neues Gerät anlegen")
-	device_name = device_ph.text_input("Name des Geräts:")
-	article_number = article_number_ph.text_input("Artikelnummer:")
-	acquisition_date = datetime.now().strftime(dateformat)
-	change_date = datetime.now().strftime(dateformat)
+	device_name = device_ph.text_input("Name des Geräts*:")
+	article_number = article_number_ph.text_input("Artikelnummer*:")
+	acquisition_date = datetime.now().strftime("%Y-%m-%d")
+	change_date = datetime.now().strftime("%Y-%m-%d")
 	device_description = description_ph.text_area("Optionale Beschreibung:")
-	device_responsible = responsible_person_ph.selectbox("verantwortliche Person:", person_data["name"])
+	device_responsible = responsible_person_ph.selectbox("verantwortliche Person*:",["-", *person_data], index=0)
 
-	if button1_ph.button("Gerät anlegen/ändern"):
-		data = Device(device_name, article_number, device_description, device_responsible, acquisition_date, change_date)
-		data.store_data()
+	if button1_ph.button("Gerät anlegen"):
+		if device_name == "" or article_number == "":
+			st.warning("Bitte alle Pflichtfelder (*) ausfüllen!")
+			time.sleep(2)
+		else:
+			data = Device(device_name, article_number, device_description, device_responsible, acquisition_date, change_date)
+			data.store_data()
 
-		with st.spinner("Loading..."):
-			time.sleep(1)
-			#Save the device
+			with st.spinner("Loading..."):
+				time.sleep(1)
+				#Save the device
 
-		st.success(f"Gerät {device_name} mit dem Verantwortlichen {device_responsible} wurde angelegt!")
+				st.success(f"Gerät {device_name} mit dem Verantwortlichen {device_responsible} wurde angelegt!")
 		time.sleep(2)
 		st.rerun()
 
@@ -80,28 +82,37 @@ if st.session_state.show_session == 0:
 
 if st.session_state.show_session == 1:
 	header_ph.header("Gerät ändern")
-	devices = queries.find_devices()
-	device_name = device_ph.selectbox("Gerät:", devices, placeholder="Gerät auswählen ...")
+	devices = queries.find_database('devices', 'device_name')
+	users = queries.find_database('users', 'name')
+	print(devices)
+	try:
+		device_name = device_ph.selectbox("Gerät:", devices, placeholder="Gerät auswählen ...")
+		device_data = Device.load_data_by_device_name(device_name)
+		print(device_data.device_name)
+		# Fill the placeholders with the data of the selected device
+		art_number = article_number_ph.text_input("Artikelnummer:", value = device_data.article_number)
+		acquisition_date_ph.text(device_data.acquisition_date)
+		cdate = datetime.now().strftime("%Y-%m-%d")
+		description = description_ph.text_area("Optionale Beschreibung:", value = device_data.device_description)
+		manager = responsible_person_ph.selectbox("verantwortliche Person:", users, index = users.index(device_data.managed_by_user_id))
 
-	device_data = Device.load_data_by_device_name(device_name)
-	device_data.article_number = article_number_ph.text_input("Artikelnummer:", value = device_data.article_number)
-	acquisition_date_ph.text(device_data.acquisition_date)
-	device_data.change_date = datetime.now().strftime(dateformat)
-	device_data.device_description = description_ph.text_area("Optionale Beschreibung:", value = device_data.device_description)
-	device_data.managed_by_user_id = responsible_person_ph.selectbox("verantwortliche Person:", person_data["name"], index = person_data["name"].index(device_data.managed_by_user_id))
-	#
-	
-	if button1_ph.button("Gerät ändern"):
-		device_data.store_data()
+		if button1_ph.button("Gerät ändern"):
+		#Store the reservation data the Device class to secure a smooth data transfer
+			device_data.article_number = art_number
+			device_data.change_date = cdate
+			device_data.device_description = description
+			device_data.managed_by_user_id = manager
+			device_data.store_data()
+			with st.spinner("Loading..."):
+				time.sleep(1)
+				#Save the device
+			st.success(f"Gerät {device_data.device_name} mit dem Verantwortlichen {device_data.managed_by_user_id} wurde aktualisiert!")
+			time.sleep(2)
+			st.session_state.show_session = 0
+			st.rerun()
 
-		with st.spinner("Loading..."):
-			time.sleep(1)
-			#Save the device
-   
-		st.success(f"Gerät {device_data.device_name} mit dem Verantwortlichen {device_data.managed_by_user_id} wurde aktualisiert!")
-		time.sleep(2)
-		st.session_state.show_session = 0
-		st.rerun()
+	except Exception as e:
+		device_ph.text("Keine Geräte vorhanden!")
 
 	if button2_ph.button("Zurück"):
 		st.session_state.show_session = 0
@@ -109,21 +120,23 @@ if st.session_state.show_session == 1:
 
 if st.session_state.show_session == 2:
 	header_ph.header("Geräte anzeigen")
-	devices = queries.find_devices()
-	list_of_tabs = st.tabs(devices)
+	devices = queries.find_database('devices', 'device_name')
+	try:
+		list_of_tabs = st.tabs(devices)
 
-	for i in range(len(list_of_tabs)):
-		with list_of_tabs[i]:
-			device_data = Device.load_data_by_device_name(devices[i])
+		for i in range(len(list_of_tabs)):
+			with list_of_tabs[i]:
+				device_data = Device.load_data_by_device_name(devices[i])
 
-			st.title(device_data.device_name)
-			st.text("ID: " + device_data.article_number)
-			st.text("Verantwortliche Person: " + device_data.managed_by_user_id)
-			st.text("letzte Änderung: " + device_data.change_date)
-			st.text("Anschaffungsdatum: " + device_data.acquisition_date)
+				st.title(device_data.device_name)
+				st.text("ID: " + device_data.article_number)
+				st.text("Verantwortliche Person: " + device_data.managed_by_user_id)
+				st.text("letzte Änderung: " + device_data.change_date)
+				st.text("Anschaffungsdatum: " + device_data.acquisition_date)
+
+	except Exception as e:
+		device_ph.text("Keine Geräte vorhanden!")
 
 	if button1_ph.button("Zurück"):
 		st.session_state.show_session = 0
 		st.rerun()
-
-
