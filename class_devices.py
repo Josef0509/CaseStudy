@@ -3,6 +3,7 @@ from users import User
 from tinydb import TinyDB, Query
 from datetime import datetime
 from serializer import serializer
+import queries
 
 
 class Device():
@@ -32,26 +33,18 @@ class Device():
 		# Check if the device already exists in the database
 		device_query = Query()
 		result = self.db_connector.search(device_query.device_name == self.device_name)
+		doc_ids = queries.find_database('devices', 'device_name')
+		index = 0
+		print(doc_ids)
 		if result:
 			# Update the existing record with the current instance's data
 			result = self.db_connector.update(self.__dict__, doc_ids=[result[0].doc_id])
 			print("Data updated.")
 		else:
-			# If the device doesn't exist, insert a new record
+			#if doc_ids[1]
+			#If the device doesn't exist, insert a new record
 			self.db_connector.insert(self.__dict__)
 			print("Data inserted.")
-
-	def delete_data(self):
-		print("Deleting data...")
-		# Check if the device already exists in the database
-		device_query = Query()
-		result = self.db_connector.search(device_query.name == self.name)
-		if result:
-			# Delete the existing record
-			result = self.db_connector.remove(doc_ids=[result[0].doc_id])
-			print("Data deleted.")
-		else:
-			print("Data not found.")
 
 	# Class method that can be called without an instance of the class to construct an instance of the class
 	@classmethod
@@ -65,3 +58,13 @@ class Device():
 			return [cls(data['device_name'], data['article_number'], data['device_description'], data['managed_by_user_id'], data['acquisition_date'], data['change_date']), data.doc_id]
 		else:
 			return None
+
+	@classmethod
+	def delete_data_by_doc_id(cls, doc_id):
+		# Load data from the database and create an instance of the Device class
+		result = cls.db_connector.remove(doc_ids=[doc_id])
+
+		if result:
+			return True
+		else:
+			return False
