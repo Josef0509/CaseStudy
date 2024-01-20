@@ -13,6 +13,6 @@ def find_database(filename, key) -> list:
 
     # The result is a list of dictionaries, we only want the device names
     if result:
-        result = [x[key] for x in result]
+        result = [[x[key] for x in result], [x.doc_id for x in result]]
 
     return result
