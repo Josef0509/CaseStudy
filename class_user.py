@@ -60,7 +60,8 @@ class User():
 			return [cls(data['name'], data['email']), data.doc_id]
 		else:
 			return None
-	
+
+	@classmethod
 	def delete_data_by_doc_id(cls, doc_id):
 		# Load data from the database and create an instance of the Device class
 		result = cls.db_connector.remove(doc_ids=[doc_id])
