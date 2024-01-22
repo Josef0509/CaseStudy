@@ -32,8 +32,8 @@ if not st.session_state.show_session:
 	users = queries.find_database('users', 'name')
 	devices = queries.find_database('devices', 'device_name')
 
-	device_name = name_ph.selectbox("Gerät:", ["-", *devices], index=0, key = "device_name_reservierung")
-	reserver = reserver_ph.selectbox("Reservierende Person:", ["-", *users], index=0)
+	device_name = name_ph.selectbox("Gerät:", ["", *devices[0]], index=0, key = "device_name_reservierung")
+	reserver = reserver_ph.selectbox("Reservierende Person:", ["", *users[0]], index=0)
 	reservation_date_start = date_start_ph.date_input("Reservierungsanfangsdatum:", value=None)
 	reservation_date_end = date_end_ph.date_input("Reservierungsenddatum:", value=None)
 	start_time = time_start_ph.time_input("Anfangszeit:", value=None)
@@ -87,32 +87,28 @@ if st.session_state.show_session:
 	Delete_site_reservations = None
 	reservation_data = []
 	devices_sec = queries.find_database('devices', 'device_name')
-	print(devices_sec)
-	device_name = name_ph.selectbox("Gerät:", ["-", *devices_sec], index=0, key = "device_name_reservierung_delete")
+	#print(devices_sec)
+	device_name = name_ph.selectbox("Gerät:", ["", *devices_sec[0]], index=0, key = "device_name_reservierung_delete")
 
 	try:
 		data_res = Reservation.load_data_by_device_name(device_name)
 		for i in range(len(data_res)):
-			print(f"Device: {data_res[i].device_name}, Reserver: {data_res[i].reserver}, Start: {data_res[i].start_time}, End: {data_res[i].end_time}")
-			reservation_data.append({ "Gerät" : data_res[i].device_name, "Nutzer" : data_res[i].reserver, "Reservierungsanfang" : data_res[i].start_time.strftime("%Y-%m-%d %H:%M:%S"), "Reservierungsende" : data_res[i].end_time.strftime("%Y-%m-%d %H:%M:%S")})
+			#print(f"Device: {data_res[0][i].device_name}, Reserver: {data_res[0][i].reserver}, Start: {data_res[0][i].start_time}, End: {data_res[0][i].end_time}")
+			reservation_data.append({"ID" : data_res[1], "Gerät" : data_res[0][i].device_name, "Nutzer" : data_res[0][i].reserver, "Reservierungsanfang" : data_res[0][i].start_time.strftime("%Y-%m-%d %H:%M:%S"), "Reservierungsende" : data_res[0][i].end_time.strftime("%Y-%m-%d %H:%M:%S"), "Löschen" : data_res[0][i].is_active})
 	except LookupError as e:
 		reserver_ph.error(e)
 
-	print(reservation_data)
+	#print(reservation_data)
 	if not reservation_data == []:
-		reserver_ph.data_editor(
-        reservation_data,
-        column_config={
-            "Gerät": st.column_config.ListColumn("Gerät", width="small"),
-            "Nutzer": st.column_config.ListColumn("Nutzer", width=110),
-            "Reservierungsanfang": st.column_config.ListColumn("Reservierungsanfang", width=150),
-            "Reservierungsende": st.column_config.ListColumn("Reservierungsende", width=150),
-        },
-        hide_index=True,
-    )
+		df = pd.DataFrame(reservation_data)
+		edited_df = reserver_ph.data_editor( df, disabled=("ID", "Gerät", "Nutzer", "Reservierungsanfang", "Reservierungsende"), hide_index=True, on_change= None)
+		# Delete the reservation
+		del_index = edited_df.loc[edited_df["Löschen"].idxmax()]["ID"]
+
 		if button1_ph.button("Reservierung löschen"):
 			# Loading message
 			with st.spinner("Loading..."):
+				Reservation.delete_data_by_doc_id(del_index)
 				time.sleep(1)
 			# Message that the reservation was deleted
 			st.success("Reservierung wurde gelöscht!")
