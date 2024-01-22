@@ -14,7 +14,7 @@ class Reservation():
 		self.reserver = reserver_dev
 		self.start_time = times
 		self.end_time = timee
-		self.is_active = True
+		self.is_active = False
 
 	# String representation of the class
 	def __str__(self):
@@ -61,18 +61,6 @@ class Reservation():
 			print("Data inserted.")
 			return None
 
-	def delete_data(self):
-		print("Deleting data...")
-		# Check if the device already exists in the database
-		reservation_query = Query()
-		result = self.db_connector.search(reservation_query.name == self.name)
-		if result:
-			# Delete the existing record
-			result = self.db_connector.remove(doc_ids=[result[0].doc_id])
-			print("Data deleted.")
-		else:
-			print("Data not found.")
-
 	# Class method that can be called without an instance of the class to construct an instance of the class
 	@classmethod
 	def load_data_by_device_name(cls, device_name):
@@ -85,3 +73,13 @@ class Reservation():
 			return [[cls(data['device_name'], data['reserver'], data['start_time'], data['end_time']) for data in result], data.doc_id]
 		else:
 			raise LookupError("Keine Reservierungen gefunden")
+
+	@classmethod
+	def delete_data_by_doc_id(cls, doc_id):
+		# Load data from the database and create an instance of the Device class
+		result = cls.db_connector.remove(doc_ids=[doc_id])
+
+		if result:
+			return True
+		else:
+			return False
