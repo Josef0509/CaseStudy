@@ -16,6 +16,7 @@ add_page_title()
 
 #creating placeholders for the input fields
 name_ph = st.empty()
+table_ph = st.empty()
 reserver_ph = st.empty()
 cl1, cl2 = st.columns(2)
 date_start_ph = cl1.empty()
@@ -26,13 +27,29 @@ cl3, cl4 = st.columns(2)
 button1_ph = cl3.empty()
 button2_ph = cl4.empty()
 
-
 #creating a dropdown menu with all devices
 if not st.session_state.show_session:
+	reservation_data = []
 	users = queries.find_database('users', 'name')
 	devices = queries.find_database('devices', 'device_name')
 
 	device_name = name_ph.selectbox("Gerät:", ["", *devices[0]], index=0, key = "device_name_reservierung")
+	# Load the reservation data from the database
+	try:
+		data_res = Reservation.load_data_by_device_name(device_name)
+		for i in range(len(data_res)):
+			#print(f"Device: {data_res[0][i].device_name}, Reserver: {data_res[0][i].reserver}, Start: {data_res[0][i].start_time}, End: {data_res[0][i].end_time}")
+			reservation_data.append({"ID" : data_res[1], "Gerät" : data_res[0][i].device_name, "Nutzer" : data_res[0][i].reserver, "Reservierungsanfang" : data_res[0][i].start_time.strftime("%Y-%m-%d %H:%M:%S"), "Reservierungsende" : data_res[0][i].end_time.strftime("%Y-%m-%d %H:%M:%S"), "Löschen" : data_res[0][i].is_active})
+	except LookupError as e:
+		table_ph.text("Keine Reservierungen vorhanden!")
+	#Print the table
+	if not reservation_data == []:
+		df = pd.DataFrame(reservation_data)
+		edited_df = table_ph.data_editor( df, disabled=("ID", "Gerät", "Nutzer", "Reservierungsanfang", "Reservierungsende"), hide_index=True, on_change= None)
+		# Delete the reservation
+		del_index = edited_df.loc[edited_df["Löschen"].idxmax()]["ID"]
+
+  
 	reserver = reserver_ph.selectbox("Reservierende Person:", ["", *users[0]], index=0)
 	reservation_date_start = date_start_ph.date_input("Reservierungsanfangsdatum:", value=None)
 	reservation_date_end = date_end_ph.date_input("Reservierungsenddatum:", value=None)
@@ -71,51 +88,13 @@ if not st.session_state.show_session:
 		time.sleep(2)
 		st.rerun()
 
-	if button2_ph.button("Löschen"):
-		st.session_state.show_session = True
-		button1_ph.empty()
-		button2_ph.empty()
-
-
-if st.session_state.show_session:
-	name_ph.empty()
-	reserver_ph.empty()
-	date_start_ph.empty()
-	date_end_ph.empty()
-	time_start_ph.empty()
-	time_end_ph.empty()
-	Delete_site_reservations = None
-	reservation_data = []
-	devices_sec = queries.find_database('devices', 'device_name')
-	#print(devices_sec)
-	device_name = name_ph.selectbox("Gerät:", ["", *devices_sec[0]], index=0, key = "device_name_reservierung_delete")
-
-	try:
-		data_res = Reservation.load_data_by_device_name(device_name)
-		for i in range(len(data_res)):
-			#print(f"Device: {data_res[0][i].device_name}, Reserver: {data_res[0][i].reserver}, Start: {data_res[0][i].start_time}, End: {data_res[0][i].end_time}")
-			reservation_data.append({"ID" : data_res[1], "Gerät" : data_res[0][i].device_name, "Nutzer" : data_res[0][i].reserver, "Reservierungsanfang" : data_res[0][i].start_time.strftime("%Y-%m-%d %H:%M:%S"), "Reservierungsende" : data_res[0][i].end_time.strftime("%Y-%m-%d %H:%M:%S"), "Löschen" : data_res[0][i].is_active})
-	except LookupError as e:
-		reserver_ph.error(e)
-
-	#print(reservation_data)
-	if not reservation_data == []:
-		df = pd.DataFrame(reservation_data)
-		edited_df = reserver_ph.data_editor( df, disabled=("ID", "Gerät", "Nutzer", "Reservierungsanfang", "Reservierungsende"), hide_index=True, on_change= None)
-		# Delete the reservation
-		del_index = edited_df.loc[edited_df["Löschen"].idxmax()]["ID"]
-
-		if button1_ph.button("Reservierung löschen"):
-			# Loading message
-			with st.spinner("Loading..."):
-				Reservation.delete_data_by_doc_id(del_index)
-				time.sleep(1)
-			# Message that the reservation was deleted
-			st.success("Reservierung wurde gelöscht!")
-			time.sleep(2)
-			st.session_state.show_session = False
-			st.rerun()
-
-	if button2_ph.button("Zurück"):
-		st.session_state.show_session = False
+	if button2_ph.button("Reservierung löschen"):
+		# Loading message
+		with st.spinner("Loading..."):
+			Reservation.delete_data_by_doc_id(del_index)
+			time.sleep(1)
+		# Message that the reservation was deleted
+		st.success("Reservierung wurde gelöscht!")
+		time.sleep(2)
 		st.rerun()
+

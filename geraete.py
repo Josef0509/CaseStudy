@@ -146,14 +146,13 @@ if st.session_state.show_session == 2:
 
 	if button3_ph.button("Gerät löschen"):
 		try:
-			if queries.find_database('reservations', 'device_name'):
-				raise Exception("Gerät ist noch reserviert!")
 			Device.delete_data_by_doc_id(index)
 			st.session_state.show_session = 0
 		except Exception as e:
 			st.error(e)
 			time.sleep(2)
 			st.rerun()
+			
 		header_ph.empty()
 		device_ph.empty()
 		article_number_ph.empty()
