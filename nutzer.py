@@ -82,10 +82,6 @@ if st.session_state.show_session:
 	if button1_ph.button("Nutzer löschen"):
 		try:
 			with st.spinner("Loading..."):
-				if queries.find_database('devices', 'managed_by_user_id'):
-					raise Exception("Nutzer kann nicht gelöscht werden, da er noch Geräte zugewiesen hat!")
-				if queries.find_database('reservations', 'reserver'):
-					raise Exception("Nutzer kann nicht gelöscht werden, da er noch Reservierungen zugewiesen hat!")
 				User.delete_data_by_doc_id(del_index)
 				st.session_state.show_session = False
 				time.sleep(1)
